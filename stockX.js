@@ -76,6 +76,7 @@ async function stockXFlow(searchInput){
     if (!inDataBase){
         let productPriceJSON = await getProductPrices(styleID);
         //let productPriceJSON = {};
+        console.log("products",productPriceJSON);
         flattenedJSON = {
             lowestResellX : productPriceJSON.lowestResellPrice?.stockX ?? 100,
             lowestResellFC : productPriceJSON.lowestResellPrice?.flightClub ?? 100,
@@ -90,7 +91,7 @@ async function stockXFlow(searchInput){
             make : productPriceJSON?.make ?? "no make",
             colorway : productPriceJSON?.colorway ?? "no colorway",
             retailPrice : productPriceJSON?.retailPrice ?? "no retail price",
-            thumbNail : productPriceJSON?.urlKey ?? "no picture",
+            thumbNail : productPriceJSON?.thumbnail ?? "no picture",
             releaseDate : productPriceJSON?.releaseDate ?? "no release date",
             description : productPriceJSON?.description ?? "no description",
             urlKey :productPriceJSON?.urlKey ?? "no-key" ,

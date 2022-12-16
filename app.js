@@ -39,9 +39,23 @@ app.post("/buyerData", async (request, response) => {
     let productJSON = await stockX.stockXFlow(variables.searchInput);
     console.log("first productsJSON",productJSON);
     let table = generateBuyerTable(productJSON,request.body.store,request.body.state);
+
     variables = {
-        table: table
+        table: table,
+        shoeName: productJSON.shoeName,
+        silhoutte: productJSON.silhoutte,
+        styleID: productJSON.styleID,
+        colorway: productJSON.colorway,
+        retailPrice: productJSON.retailPrice,
+        releaseDate: productJSON.releaseDate,
+        description: productJSON.description,
+        linkX: productJSON.linkX,
+        linkFC: productJSON.linkFC,
+        linkGOAT: productJSON.linkGOAT,
+        thumbNail: productJSON.thumbNail
     }
+
+    variables = createElements(variables);
     //console.log(util.inspect(productList, {showHidden: false, depth: null, colors: true}))
     response.render("buyerData",variables);
 });
@@ -250,11 +264,12 @@ const stateTaxes = {
 }
 
 function generateBuyerTable(productJSON,store,state){
-    let table = "<table border=1><tr><th>Size</th><th>Price</th></tr>";
+    let table = "<table border=1 style='float:right;'><caption>Flight Club Prices</caption><tr><th>Size</th><th>Price</th></tr>";
     console.log("productsJson",productJSON);
     let priceJSON = JSON.parse(productJSON.flightClubPrices);
     let priceKeys = Object.keys(priceJSON)
-    priceKeys.map((x) => parseInt(x)).sort();
+    priceKeys.map((x) => parseFloat(x));
+    priceKeys.sort(function(a,b){return a-b});
     console.log(priceKeys);
     let taxRate = getStateTaxes(state);
     let calculateFinal = (x) => {        
@@ -273,16 +288,26 @@ function generateBuyerTable(productJSON,store,state){
     }
     let cheapestSize = 4;
     let cheapestPrice = Infinity;
+    let expensiveSize = 4;
+    let expensivePrice = -1 * Infinity;
     for (let x in priceJSON){
         if (priceJSON[x] < cheapestPrice){
             cheapestSize = x;
             cheapestPrice = priceJSON[x];
         }
+        if (priceJSON[x] > expensivePrice){
+            expensiveSize = x;
+            expensivePrice = priceJSON[x];
+        }
     }
     for (let x of priceKeys){
-        if (x === cheapestSize){
+        if (x === cheapestSize && x === expensiveSize){
+            table += `<tr><td>${x}</td><td>${calculateFinal(priceJSON[x])}</tr>`;
+        } else if (x === cheapestSize){
             table += `<tr style='background-color: #D6EEEE;'><td>${x}</td><td>${calculateFinal(priceJSON[x])}</tr>`;
-        } else {
+        } else if (x === expensiveSize) {
+            table += `<tr style='background-color: #FFCCCB;'><td>${x}</td><td>${calculateFinal(priceJSON[x])}</tr>`;
+        } else{
             table += `<tr><td>${x}</td><td>${calculateFinal(priceJSON[x])}</tr>`;
         }
     }
@@ -295,4 +320,19 @@ function getStateTaxes(state){
         return stateTaxes[state]['rate'];
     }
     return 0;
+}
+
+function createElements(variables){
+    variables.silhoutte = `<label>Silhoutte: ${variables.silhoutte}</label>`;
+    variables.styleID = `<label>SKU: ${variables.styleID}</label>`;
+    variables.colorway = `<label>Colorway:${variables.colorway}</label> `;
+    variables.retailPrice = `<label>Retail Price: ${variables.retailPrice}</label>`;
+    variables.thumbNail = `<img src=${variables.thumbNail} alt=${variables.shoeName} style='width:50%'>`;
+    variables.releaseDate = `<label>Release Date: ${variables.releaseDate}</label>`;
+    variables.description = `<label>Description: ${variables.description}</label>`;
+    variables.linkX = `<a href="${variables.linkX}">StockX Link</a>`;
+    variables.linkFC = `<a href="${variables.linkFC}">Flight Club Link</a>`;
+    variables.linkGOAT = `<a href="${variables.linkGOAT}">GOAT Link</a>`;
+    variables.shoeName = `<h2>${variables.shoeName}</h2>`;
+    return variables;
 }
