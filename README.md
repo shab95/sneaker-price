@@ -12,7 +12,7 @@ Sneaker price is an app that allows users to see prices of shoes. Users can sele
 Documentation: https://rapidapi.com/belchiorarkad-FqvHs2EDOtP/api/sneaker-database-stockx
 
 Endpoints Used:
-  -https://sneaker-database-stockx.p.rapidapi.com/getproducts
-  -https://sneaker-database-stockx.p.rapidapi.com/productprice
+  - https://sneaker-database-stockx.p.rapidapi.com/getproducts
+  - https://sneaker-database-stockx.p.rapidapi.com/productprice
   
 ### Youtube Video: 
