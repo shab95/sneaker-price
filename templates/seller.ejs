@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Seller Mode</title>
+</head>
+
+<body>
+    <h1>Sneaker Price Finder</h1>
+    <hr>
+    <h2>Seller Mode</h2>
+    <br>
+    <form action='/sellerData' method='POST'>
+        <div class="searchInputs">
+            <label>Key Words
+                <input type="text" name="searchInput" placeholder="Find a Sneaker..." />
+            </label>
+        </div>
+
+        <label>Fees Options
+            <select name="store">
+                <option value="goat">GOAT</option>
+                <option value="stockx">StockX</option>
+                <option value="stadiumGoods">Stadium Goods</option>
+                <option value="flightClub">Flight Club</option>
+                <option value="none" selected>None</option>
+            </select>
+        </label>
+        <br>
+
+        <label><input name="profitMargin" type="checkbox" checked>Include Profit Margins</label>
+        <br>
+        <input type="submit" value="Find Prices">
+        <input type="reset" value="Clear Search">
+    </form>
+
+</body>
+
+</html>

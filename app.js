@@ -16,19 +16,283 @@ app.get("/", (request, response) => {
     response.render("index");
 });
 
-app.post("/data", async (request, response) => {
+app.get("/buyer.ejs", (request, response) => {
+    /* Generating HTML */
+    response.render("buyer");
+});
+
+app.get("/seller.ejs", (request, response) => {
+    /* Generating HTML */
+    response.render("seller");
+});
+
+
+app.post("/buyerData", async (request, response) => {
     /* Generating HTML */
     
-    let responseJSON = await stockX.findProducts(request.body.searchInput);
     let variables = {
-        searchInput: products,
+        searchInput: request.body.searchInput,
+        feesOption: request.body.store,
+        stateOption: request.body.state
     }
-    productList =  
-    console.log(util.inspect(products, {showHidden: false, depth: null, colors: true}))
+    
+    let productJSON = await stockX.stockXFlow(variables.searchInput);
+    console.log("first productsJSON",productJSON);
+    let table = generateBuyerTable(productJSON,request.body.store,request.body.state);
+    variables = {
+        table: table
+    }
+    //console.log(util.inspect(productList, {showHidden: false, depth: null, colors: true}))
+    response.render("buyerData",variables);
+});
+
+app.post("/seller", async (request, response) => {
+    /* Generating HTML */
+    
+    let variables = {
+        searchInput: request.body.searchInput,
+    }
+    let productList = await stockX.stockXFlow("travis jordan 1 high");
+    console.log(util.inspect(productList, {showHidden: false, depth: null, colors: true}))
     response.render("data",variables);
 });
+
 
 app.listen(portNumber);
 
 console.log(`Web server started and running at http://localhost:${portNumber}`)
 
+const stateTaxes = {
+  "HI": {
+    "rate": 0.04,
+    "type": "vat"
+  },
+  "MA": {
+    "rate": 0.0625,
+    "type": "vat"
+  },
+  "RI": {
+    "rate": 0.07,
+    "type": "vat"
+  },
+  "CT": {
+    "rate": 0.06,
+    "type": "vat"
+  },
+  "NJ": {
+    "rate": 0.07,
+    "type": "vat"
+  },
+  "MD": {
+    "rate": 0.06,
+    "type": "vat"
+  },
+  "DC": {
+    "rate": 0.06,
+    "type": "vat"
+  },
+  "WA": {
+    "rate": 0.065,
+    "type": "vat"
+  },
+  "CA": {
+    "rate": 0.0825,
+    "type": "vat"
+  },
+  "NV": {
+    "rate": 0.0685,
+    "type": "vat"
+  },
+  "ID": {
+    "rate": 0.06,
+    "type": "vat"
+  },
+  "WY": {
+    "rate": 0.04,
+    "type": "vat"
+  },
+  "UT": {
+    "rate": 0.0595,
+    "type": "vat"
+  },
+  "AZ": {
+    "rate": 0.066,
+    "type": "vat"
+  },
+  "CO": {
+    "rate": 0.029,
+    "type": "vat"
+  },
+  "NM": {
+    "rate": 0.05,
+    "type": "vat"
+  },
+  "ND": {
+    "rate": 0.05,
+    "type": "vat"
+  },
+  "SD": {
+    "rate": 0.04,
+    "type": "vat"
+  },
+  "NE": {
+    "rate": 0.055,
+    "type": "vat"
+  },
+  "KS": {
+    "rate": 0.063,
+    "type": "vat"
+  },
+  "OK": {
+    "rate": 0.045,
+    "type": "vat"
+  },
+  "TX": {
+    "rate": 0.0625,
+    "type": "vat"
+  },
+  "MN": {
+    "rate": 0.06875,
+    "type": "vat"
+  },
+  "IA": {
+    "rate": 0.06,
+    "type": "vat"
+  },
+  "MO": {
+    "rate": 0.04225,
+    "type": "vat"
+  },
+  "AR": {
+    "rate": 0.06,
+    "type": "vat"
+  },
+  "LA": {
+    "rate": 0.04,
+    "type": "vat"
+  },
+  "WI": {
+    "rate": 0.05,
+    "type": "vat"
+  },
+  "IL": {
+    "rate": 0.0625,
+    "type": "vat"
+  },
+  "MI": {
+    "rate": 0.06,
+    "type": "vat"
+  },
+  "IN": {
+    "rate": 0.07,
+    "type": "vat"
+  },
+  "OH": {
+    "rate": 0.055,
+    "type": "vat"
+  },
+  "KY": {
+    "rate": 0.06,
+    "type": "vat"
+  },
+  "TN": {
+    "rate": 0.07,
+    "type": "vat"
+  },
+  "MS": {
+    "rate": 0.07,
+    "type": "vat"
+  },
+  "AL": {
+    "rate": 0.04,
+    "type": "vat"
+  },
+  "GA": {
+    "rate": 0.04,
+    "type": "vat"
+  },
+  "FL": {
+    "rate": 0.06,
+    "type": "vat"
+  },
+  "ME": {
+    "rate": 0.05,
+    "type": "vat"
+  },
+  "VT": {
+    "rate": 0.06,
+    "type": "vat"
+  },
+  "NY": {
+    "rate": 0.04,
+    "type": "vat"
+  },
+  "PA": {
+    "rate": 0.06,
+    "type": "vat"
+  },
+  "WV": {
+    "rate": 0.06,
+    "type": "vat"
+  },
+  "VA": {
+    "rate": 0.05,
+    "type": "vat"
+  },
+  "NC": {
+    "rate": 0.0575,
+    "type": "vat"
+  },
+  "SC": {
+    "rate": 0.06,
+    "type": "vat"
+  }
+}
+
+function generateBuyerTable(productJSON,store,state){
+    let table = "<table border=1><tr><th>Size</th><th>Price</th></tr>";
+    console.log("productsJson",productJSON);
+    let priceJSON = JSON.parse(productJSON.flightClubPrices);
+    let priceKeys = Object.keys(priceJSON)
+    priceKeys.map((x) => parseInt(x)).sort();
+    console.log(priceKeys);
+    let taxRate = getStateTaxes(state);
+    let calculateFinal = (x) => {        
+        x += (x*taxRate);
+        if (store === 'stockX'){
+            x += (x * .03);
+            x += 14.95;
+        } else if(store === 'goat'){
+            x += 14.50;
+        } else if (store === 'stadiumGoods'){
+            x += 13;
+        } else if (store === 'fightClub'){
+            x += 14.50;
+        }
+        return x;
+    }
+    let cheapestSize = 4;
+    let cheapestPrice = Infinity;
+    for (let x in priceJSON){
+        if (priceJSON[x] < cheapestPrice){
+            cheapestSize = x;
+            cheapestPrice = priceJSON[x];
+        }
+    }
+    for (let x of priceKeys){
+        if (x === cheapestSize){
+            table += `<tr style='background-color: #D6EEEE;'><td>${x}</td><td>${calculateFinal(priceJSON[x])}</tr>`;
+        } else {
+            table += `<tr><td>${x}</td><td>${calculateFinal(priceJSON[x])}</tr>`;
+        }
+    }
+    table += "</table>";
+    return table;
+}
+
+function getStateTaxes(state){
+    if (stateTaxes.hasOwnProperty(state)){
+        return stateTaxes[state]['rate'];
+    }
+    return 0;
+}
