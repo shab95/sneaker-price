@@ -78,7 +78,6 @@ app.post("/sellerData", async (request, response) => {
     }
     console.log("first productsJSON",productJSON);
     let table = generateSellerTable(productJSON,request.body.store,request.body.profitMargin,productJSON.retailPrice);
-
     variables = {
         table: table,
         shoeName: productJSON.shoeName,
@@ -422,7 +421,6 @@ function generateSellerTable(productJSON,store,includeProfitMargin,retailPrice){
             }
         }
     }
-    
     table += `<tr><td colspan="${includeProfitMargin ? 3 : 2}">${getStoreName(store)} fees applied</td></tr></table>`;
     return table;
 }
