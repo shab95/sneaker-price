@@ -37,9 +37,12 @@ app.post("/buyerData", async (request, response) => {
     }
     
     let productJSON = await stockX.stockXFlow(variables.searchInput);
+    if (productJSON === "No Products Match Your Keywords!"){
+        response.render("buyerFail");
+        return;
+    }
     console.log("first productsJSON",productJSON);
     let table = generateBuyerTable(productJSON,request.body.store,request.body.state);
-
     variables = {
         table: table,
         shoeName: productJSON.shoeName,
@@ -60,15 +63,40 @@ app.post("/buyerData", async (request, response) => {
     response.render("buyerData",variables);
 });
 
-app.post("/seller", async (request, response) => {
+app.post("/sellerData", async (request, response) => {
     /* Generating HTML */
     
     let variables = {
         searchInput: request.body.searchInput,
+        feesOption: request.body.store,
+        stateOption: request.body.profitMargin
     }
-    let productList = await stockX.stockXFlow("travis jordan 1 high");
-    console.log(util.inspect(productList, {showHidden: false, depth: null, colors: true}))
-    response.render("data",variables);
+    let productJSON = await stockX.stockXFlow(variables.searchInput);
+    if (productJSON === "No Products Match Your Keywords!"){
+        response.render("sellerFail");
+        return;
+    }
+    console.log("first productsJSON",productJSON);
+    let table = generateSellerTable(productJSON,request.body.store,request.body.profitMargin,productJSON.retailPrice);
+
+    variables = {
+        table: table,
+        shoeName: productJSON.shoeName,
+        silhoutte: productJSON.silhoutte,
+        styleID: productJSON.styleID,
+        colorway: productJSON.colorway,
+        retailPrice: productJSON.retailPrice,
+        releaseDate: productJSON.releaseDate,
+        description: productJSON.description,
+        linkX: productJSON.linkX,
+        linkFC: productJSON.linkFC,
+        linkGOAT: productJSON.linkGOAT,
+        thumbNail: productJSON.thumbNail
+    }
+
+    variables = createElements(variables);
+    //console.log(util.inspect(productList, {showHidden: false, depth: null, colors: true})
+    response.render("sellerData",variables);
 });
 
 
@@ -263,8 +291,15 @@ const stateTaxes = {
   }
 }
 
+function getStateTaxes(state){
+    if (stateTaxes.hasOwnProperty(state)){
+        return stateTaxes[state]['rate'];
+    }
+    return 0;
+}
+
 function generateBuyerTable(productJSON,store,state){
-    let table = "<table border=1 style='float:right;'><caption>Flight Club Prices</caption><tr><th>Size</th><th>Price</th></tr>";
+    let table = "<table border=1 style='text-align:center;float:right;margin-top:-8%'><caption><strong>Flight Club Prices</strong></caption><tr><th>Size</th><th>Price</th></tr>";
     console.log("productsJson",productJSON);
     let priceJSON = JSON.parse(productJSON.flightClubPrices);
     let priceKeys = Object.keys(priceJSON)
@@ -281,10 +316,10 @@ function generateBuyerTable(productJSON,store,state){
             x += 14.50;
         } else if (store === 'stadiumGoods'){
             x += 13;
-        } else if (store === 'fightClub'){
+        } else if (store === 'flightClub'){
             x += 14.50;
         }
-        return x;
+        return x.toFixed(2);
     }
     let cheapestSize = 4;
     let cheapestPrice = Infinity;
@@ -304,35 +339,119 @@ function generateBuyerTable(productJSON,store,state){
         if (x === cheapestSize && x === expensiveSize){
             table += `<tr><td>${x}</td><td>${calculateFinal(priceJSON[x])}</tr>`;
         } else if (x === cheapestSize){
-            table += `<tr style='background-color: #D6EEEE;'><td>${x}</td><td>${calculateFinal(priceJSON[x])}</tr>`;
+            table += `<tr style='background-color: #D6EEEE;'><td>${x}</td><td>${calculateFinal(priceJSON[x])}</td></tr>`;
         } else if (x === expensiveSize) {
-            table += `<tr style='background-color: #FFCCCB;'><td>${x}</td><td>${calculateFinal(priceJSON[x])}</tr>`;
+            table += `<tr style='background-color: #FFCCCB;'><td>${x}</td><td>${calculateFinal(priceJSON[x])}</td></tr>`;
         } else{
-            table += `<tr><td>${x}</td><td>${calculateFinal(priceJSON[x])}</tr>`;
+            table += `<tr><td>${x}</td><td>${calculateFinal(priceJSON[x])}</td></tr>`;
         }
     }
-    table += "</table>";
+    table += `<tr><td colspan="2">${getStoreName(store)} fees applied</td></tr></table>`;
     return table;
 }
 
-function getStateTaxes(state){
-    if (stateTaxes.hasOwnProperty(state)){
-        return stateTaxes[state]['rate'];
+function generateSellerTable(productJSON,store,includeProfitMargin,retailPrice){
+    let table = "";
+    if(includeProfitMargin){
+        table = "<table border=1 style='text-align:center;float:right;margin-top:-8%'><caption><strong>Flight Club Prices</strong></caption><tr><th>Size</th><th>Price</th><th>Profit margin</th></tr>";
+    } else{
+        table = "<table border=1 style='text-align:center;float:right;margin-top:-8%'><caption><strong>Flight Club Prices</strong></caption><tr><th>Size</th><th>Price</th></tr>";
     }
-    return 0;
+    console.log("productsJson",productJSON);
+    let priceJSON = JSON.parse(productJSON.flightClubPrices);
+    let priceKeys = Object.keys(priceJSON)
+    priceKeys.map((x) => parseFloat(x));
+    priceKeys.sort(function(a,b){return a-b});
+    console.log(priceKeys);
+    let calculateFinal = (x) => {
+        if (store === 'stockX'){
+            let processing = (x * 0.03);
+            x -= (x * 0.095);
+            x -= (processing + 4);
+        } else if(store === 'goat'){
+            x -= (x * 0.095);
+            x -=5;
+        } else if (store === 'stadiumGoods'){
+            let processing = (x * 0.01);
+            x -= (x * 0.2);
+            x -= (processing + 10);
+        } else if (store === 'flightClub'){
+            let processing = (x * 0.029);
+            x -= (x * 0.095);
+            x -= (processing + 5);
+        }
+        return x.toFixed(2);
+    }
+    let cheapestSize = 4;
+    let cheapestPrice = Infinity;
+    let expensiveSize = 4;
+    let expensivePrice = -1 * Infinity;
+    for (let x in priceJSON){
+        if (priceJSON[x] < cheapestPrice){
+            cheapestSize = x;
+            cheapestPrice = priceJSON[x];
+        }
+        if (priceJSON[x] > expensivePrice){
+            expensiveSize = x;
+            expensivePrice = priceJSON[x];
+        }
+    }
+    if (includeProfitMargin){
+        for (let x of priceKeys){
+            let profitMargin = (calculateFinal(priceJSON[x]) - retailPrice).toFixed(2);
+            if (x === cheapestSize && x === expensiveSize){
+                table += `<tr><td>${x}</td><td>${calculateFinal(priceJSON[x])}</tr>`;
+            } else if (x === cheapestSize){
+                table += `<tr style='background-color: #FFCCCB;'><td>${x}</td><td>${calculateFinal(priceJSON[x])}</td><td>${profitMargin}</td></tr>`;
+            } else if (x === expensiveSize) {
+                table += `<tr style='background-color: #D6EEEE;'><td>${x}</td><td>${calculateFinal(priceJSON[x])}</td><td>${profitMargin}</td></tr>`;
+            } else{
+                table += `<tr><td>${x}</td><td>${calculateFinal(priceJSON[x])}</td><td>${profitMargin}</td></tr>`;
+            }
+        }
+    } else {
+        for (let x of priceKeys){
+            if (x === cheapestSize && x === expensiveSize){
+                table += `<tr><td>${x}</td><td>${calculateFinal(priceJSON[x])}</tr>`;
+            } else if (x === cheapestSize){
+                table += `<tr style='background-color: #FFCCCB;'><td>${x}</td><td>${calculateFinal(priceJSON[x])}</td></tr>`;
+            } else if (x === expensiveSize) {
+                table += `<tr style='background-color: #D6EEEE;'><td>${x}</td><td>${calculateFinal(priceJSON[x])}</td></tr>`;
+            } else{
+                table += `<tr><td>${x}</td><td>${calculateFinal(priceJSON[x])}</td></tr>`;
+            }
+        }
+    }
+    
+    table += `<tr><td colspan="${includeProfitMargin ? 3 : 2}">${getStoreName(store)} fees applied</td></tr></table>`;
+    return table;
+}
+
+function getStoreName(store){
+    if (store === "goat"){
+        return "GOAT";
+    } else if(store === "stockX"){
+        return "StockX";
+    } else if(store === "stadiumGoods"){
+        return "Stadium Goods";
+    } else if(store === "flightClub"){
+        return "Flight Club";
+    } else {
+        return "No";
+    }
 }
 
 function createElements(variables){
-    variables.silhoutte = `<label>Silhoutte: ${variables.silhoutte}</label>`;
-    variables.styleID = `<label>SKU: ${variables.styleID}</label>`;
-    variables.colorway = `<label>Colorway:${variables.colorway}</label> `;
-    variables.retailPrice = `<label>Retail Price: ${variables.retailPrice}</label>`;
-    variables.thumbNail = `<img src=${variables.thumbNail} alt=${variables.shoeName} style='width:50%'>`;
-    variables.releaseDate = `<label>Release Date: ${variables.releaseDate}</label>`;
-    variables.description = `<label>Description: ${variables.description}</label>`;
+    variables.silhoutte = `<label style="float:left"><strong>Silhoutte:</strong> ${variables.silhoutte}</label>`;
+    variables.styleID = `<label style="float:left"><strong>SKU:</strong> ${variables.styleID}</label>`;
+    variables.colorway = `<label style="float:left;white-space: nowrap;width: 23%;overflow: hidden;text-overflow: ellipsis; display: inline-block;"><strong>Colorway:</strong> ${variables.colorway}</label> `;
+    variables.retailPrice = `<label style="float:left"><strong>Retail Price:</strong> $${variables.retailPrice}</label>`;
+    variables.thumbNail = `<img src=${variables.thumbNail} alt=${variables.shoeName} style='width:50%;margin-left:13%;margin-top:-5%;'>`;
+    variables.releaseDate = `<label style="float:left"><strong>Release Date:</strong> ${variables.releaseDate}</label>`;
+    variables.description = `<label><strong>Description:</strong> ${variables.description}</label>`;
     variables.linkX = `<a href="${variables.linkX}">StockX Link</a>`;
     variables.linkFC = `<a href="${variables.linkFC}">Flight Club Link</a>`;
     variables.linkGOAT = `<a href="${variables.linkGOAT}">GOAT Link</a>`;
-    variables.shoeName = `<h2>${variables.shoeName}</h2>`;
+    variables.shoeName = `<h2 style='text-align:center'>${variables.shoeName}</h2>`;
     return variables;
 }

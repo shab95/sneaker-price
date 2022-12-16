@@ -20,8 +20,13 @@ async function findProducts(searchInput){
     };
 
     const request = new fetch.Request(url, requestOptions)
-    let response = await fetch(request);
-    let result = await response.json();
+    let result = "";
+    try{
+        let response = await fetch(request);
+        result = await response.json();
+    } catch (error){
+        return "Could not find product!";
+    }
     return result;
 }
 
@@ -37,8 +42,12 @@ async function getProductPrices(styleID){
     };
 
     const request = new fetch.Request(url, requestOptions)
-    let response = await fetch(request);
-    let result = await response.json();
+    try{
+        let response = await fetch(request);
+        result = await response.json();
+    } catch (error){
+        return "Could not find product!";
+    }
     return result;
 }
 
@@ -47,7 +56,7 @@ async function stockXFlow(searchInput){
     let client = await mongo.createClient(userName,password);
     let responseJSON = await findProducts(searchInput);
     let productList = responseJSON;
-    if (productList.length == 0){
+    if (productList === "Could not find product!"){
         return "No Products Match Your Keywords!"
     }
 
@@ -75,13 +84,16 @@ async function stockXFlow(searchInput){
 
     if (!inDataBase){
         let productPriceJSON = await getProductPrices(styleID);
-        //let productPriceJSON = {};
+        console.log(productPriceJSON.hasOwnProperty("resellLinks"));
+        if (productPriceJSON === "Could not find product!" || !productPriceJSON.hasOwnProperty("resellPrices")){
+            return "No Products Match Your Keywords!"
+        }
         console.log("products",productPriceJSON);
         flattenedJSON = {
             lowestResellX : productPriceJSON.lowestResellPrice?.stockX ?? 100,
             lowestResellFC : productPriceJSON.lowestResellPrice?.flightClub ?? 100,
             lowestResellGOAT : productPriceJSON.lowestResellPrice?.goat ?? 100 ,
-            flightClubPrices : JSON.stringify(productPriceJSON.resellPrices?.flightClub) ?? "{4:0}",
+            flightClubPrices : JSON.stringify(productPriceJSON.resellPrices?.flightClub) ?? "no prices",
             imageLinks : productPriceJSON?.imageLinks ?? "no imageLinks",
             id : productPriceJSON?._id ?? "no id",
             shoeName : productPriceJSON?.shoeName ?? "no shoe name",
