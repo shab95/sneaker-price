@@ -1,4 +1,5 @@
-# sneaker-price
+# Sneaker Price
+<a href="https://sneakerprice.onrender.com">Website</a>
 
 ### Team Members
 - Shabarish Nair
@@ -16,3 +17,4 @@ Endpoints Used:
   - https://sneaker-database-stockx.p.rapidapi.com/productprice
   
 ### Youtube Video: 
+https://www.youtube.com/watch?v=ojsYeLKZ7VM&ab_channel=ShabarishNair
