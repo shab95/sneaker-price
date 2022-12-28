@@ -7,14 +7,14 @@ require("dotenv").config({ path: path.resolve(__dirname, '.env') })
 const userName = process.env.MONGO_DB_USERNAME;
 const password = process.env.MONGO_DB_PASSWORD;
 const databaseAndCollection = {db: process.env.MONGO_DB_NAME, collection:process.env.MONGO_COLLECTION};
-
+const RAPIDAPIKEY = 'PUTYOURKEYHERE';
 async function findProducts(searchInput){
     const url = `https://sneaker-database-stockx.p.rapidapi.com/getproducts?keywords=${searchInput}&limit=10`;
 
     const requestOptions = {
         method: 'GET',
         headers: {
-            'X-RapidAPI-Key': '839cf5908emsh19daf2da66e1c60p1b148djsn5179e869a2e2',
+            'X-RapidAPI-Key': RAPIDAPIKEY,
             'X-RapidAPI-Host': 'sneaker-database-stockx.p.rapidapi.com'
         }
     };
@@ -36,7 +36,7 @@ async function getProductPrices(styleID){
     const requestOptions = {
     method: 'GET',
     headers: {
-        'X-RapidAPI-Key': '839cf5908emsh19daf2da66e1c60p1b148djsn5179e869a2e2',
+        'X-RapidAPI-Key': RAPIDAPIKEY,
         'X-RapidAPI-Host': 'sneaker-database-stockx.p.rapidapi.com'
     }
     };
